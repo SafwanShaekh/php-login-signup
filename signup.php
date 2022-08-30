@@ -8,33 +8,33 @@ if ( ! filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
     die("Valid email is required");
 }
 
-if (strlen($_POST["password"]) < 8) {
+if (strlen($_POST["pwd"]) < 8) {
     die("Password must be at least 8 characters");
 }
 
-if ( ! preg_match("/[a-z]/i", $_POST["password"])) {
+if ( ! preg_match("/[a-z]/i", $_POST["pwd"])) {
     die("Password must contain at least one letter");
 }
 
-if ( ! preg_match("/[0-9]/", $_POST["password"])) {
+if ( ! preg_match("/[0-9]/", $_POST["pwd"])) {
     die("Password must contain at least one number");
 }
 
-if ($_POST["password"] !== $_POST["password_confirmation"]) {
+if ($_POST["pwd"] !== $_POST["confirm_pwd"]) {
     die("Passwords must match");
 }
 
-$password_hash = password_hash($_POST["password"], PASSWORD_DEFAULT);
+$password_hash = password_hash($_POST["pwd"], PASSWORD_DEFAULT);
 
-$mysqli = require __DIR__ . "/database.php";
+$con = include('database.php');
 
-$sql = "INSERT INTO user (name, email, password_hash)
+$query = "INSERT INTO user (name, email, password_hash)
         VALUES (?, ?, ?)";
         
-$stmt = $mysqli->stmt_init();
+$stmt = $con->stmt_init();
 
-if ( ! $stmt->prepare($sql)) {
-    die("SQL error: " . $mysqli->error);
+if ( ! $stmt->prepare($query)) {
+    die("SQL error: " . $con->error);
 }
 
 $stmt->bind_param("sss",
@@ -49,10 +49,10 @@ if ($stmt->execute()) {
     
 } else {
     
-    if ($mysqli->errno === 1062) {
+    if ($con->errno === 1062) {
         die("email already taken");
     } else {
-        die($mysqli->error . " " . $mysqli->errno);
+        die($con->error . " " . $con->errno);
     }
 }
 
